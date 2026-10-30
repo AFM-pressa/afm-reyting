@@ -31,6 +31,7 @@
     color-scheme: dark;
   }
 }
+[hidden] { display: none !important; }
 html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: 15px; }
 #dash-root { padding: clamp(12px, 3vw, 40px) max(var(--dash-gutter, 16px), env(safe-area-inset-left, 0px)); }
 .rr-dl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 18px;
@@ -127,7 +128,8 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); fon
   /* Сводка */
   .rr-kpis { margin-top: calc(-1 * clamp(56px, 7vw, 72px)); position: relative; z-index: 1; padding-inline: clamp(8px, 2vw, 20px);
     display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); }
-  .rr-kpis-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .rr-kpis-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 420px) { .rr-kpis-3 { grid-template-columns: 1fr; } }
   .rr-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: calc(var(--cds-radius) + 2px);
     padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: 2px; align-content: start; position: relative; overflow: hidden;
     box-shadow: 0 8px 24px rgba(13,36,64,.10); }
@@ -304,7 +306,7 @@ html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); fon
         <h1>Рейтинг имиджевой работы ДЭР: <span data-draw="cum-period" data-source="summary" data-field="cum_period" data-row="0">—</span></h1>
         <p class="rr-lede">По итогам периода первое место у региона <b data-draw="cum-leader" data-source="summary" data-field="cum_leader" data-row="0">—</b> (<b data-draw="cum-leader-pts" data-source="summary" data-field="cum_leader_total" data-row="0">—</b> балла). За <span data-draw="month-label" data-source="summary" data-field="month_label" data-row="0">—</span> лидирует <b data-draw="leader" data-source="summary" data-field="leader" data-row="0">—</b> (<b data-draw="leader-pts" data-source="summary" data-field="leader_total" data-row="0">—</b> балла).</p>
         <div class="rr-meta">
-          <span class="rr-live"><i></i>Обновляется ежедневно в 09:00</span>
+          <span class="rr-live"><i></i>Обновляется еженедельно, по пятницам</span>
           <span>Данные по <span data-draw="as-of" data-source="summary" data-field="as_of" data-row="0">—</span></span>
           <span>Обновлено <span data-draw="updated" data-source="summary" data-field="updated_at" data-row="0">—</span></span>
         </div>
