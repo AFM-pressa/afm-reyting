@@ -67,11 +67,6 @@ html, body { background: radial-gradient(90% 900px at 62% 380px, #262e7c 0%, #1c
 .seg button:focus-visible, .row:focus-visible, .open:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 .hero { position: relative; }
-.head { position: absolute; z-index: 3; left: 0; top: 8px; max-width: 26ch; pointer-events: none; }
-.eyebrow { margin: 0; font-size: 14px; color: var(--muted); }
-.lead { margin: 6px 0 0; font-size: clamp(2.6rem, 6.2vw, 5.6rem); font-weight: 700; line-height: .98; letter-spacing: -.035em; }
-.leader { margin: 10px 0 0; font-size: clamp(1.05rem, 1.7vw, 1.4rem); font-weight: 500; }
-.leader span { color: var(--gold); }
 
 .stage { position: relative; touch-action: pan-y; cursor: grab; user-select: none; }
 .stage.drag { cursor: grabbing; }
@@ -113,8 +108,7 @@ html, body { background: radial-gradient(90% 900px at 62% 380px, #262e7c 0%, #1c
 .open:hover { color: var(--gold); }
 
 .ctrls { display: flex; flex-wrap: wrap; gap: 8px; }
-.hero.tbl .head { position: static; max-width: none; margin-bottom: 20px; }
-.tw { overflow-x: auto; }
+.hero.tbl .tw { overflow-x: auto; }
 .tw table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .tw th { padding: 8px 10px; font-size: 13px; font-weight: 500; color: var(--muted); text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
 .tw td { padding: 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
@@ -126,9 +120,9 @@ html, body { background: radial-gradient(90% 900px at 62% 380px, #262e7c 0%, #1c
 .tw tr.top3 td:first-child, .tw tr.top3 .tw td.t { color: var(--gold); }
 .up { color: var(--gold); } .down { color: var(--muted); }
 
+@media (min-width: 1001px) { .card.follow { width: 244px; } .card.follow .parts, .card.follow .open { display: none; } }
 @media (max-width: 1000px) {
-  .head { position: static; max-width: none; margin-bottom: 8px; }
-  .card { position: static; width: 100%; margin-top: 8px; }
+    .card, .card.follow { position: static; transform: none !important; pointer-events: auto; width: 100%; margin-top: 8px; }
   .vw { position: static; margin-top: 6px; }
   .stage svg { max-height: none; }
   .num { font-size: 22px; } .num.top { font-size: 26px; }
@@ -142,6 +136,9 @@ html, body { background: radial-gradient(90% 900px at 62% 380px, #262e7c 0%, #1c
 .city-band p { margin: 0; color: #d9ddf2; font-size: 15px; }
 .city-band h2 { margin: 4px 0 0; font-size: clamp(2.2rem, 6vw, 4.4rem); font-weight: 700; letter-spacing: -.03em; line-height: 1; overflow-wrap: anywhere; color: #f4f5fb; }
 .wrap, .wrap *, .city-band { box-sizing: border-box; }
+.card { transition: transform .28s ease; }
+.card.follow { transition: none; pointer-events: none; }
+.card.follow .tot { margin-bottom: 8px; font-size: 34px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="data.js"></script>
@@ -200,20 +197,15 @@ html, body { background: radial-gradient(90% 900px at 62% 380px, #262e7c 0%, #1c
   </header>
 
   <div class="hero" id="hero">
-    <div class="head">
-      <p class="eyebrow" id="period"></p>
-      <p class="lead" id="lead"></p>
-      <p class="leader"><span>1 место</span> · <b id="leadname"></b></p>
-    </div>
     <div class="stage" id="stage">
-      <svg id="map" viewBox="0 0 1000 660" role="img" aria-label="Карта Казахстана: 20 регионов, цвет показывает баллы рейтинга">
+      <svg id="map" viewBox="0 50 1000 610" role="img" aria-label="Карта Казахстана: 20 регионов, цвет показывает баллы рейтинга">
         <defs>
           <path id="kz"/>
         </defs>
         <path class="sphere" id="sphere"/><path class="grat" id="grat"/>
         <g id="ex"></g><g id="regs"></g><g id="nums"></g><g id="cities"></g>
       </svg>
-      <svg id="over" class="over" viewBox="0 0 1000 660" aria-hidden="true">
+      <svg id="over" class="over" viewBox="0 50 1000 610" aria-hidden="true">
         <path id="fp"/>
         <text id="fn" class="num top"></text>
       </svg>
@@ -1111,19 +1103,8 @@ function paint() {
   citySel.select('text').text(d=>rowOf(d.id).place).attr('fill',d=>ink(rowOf(d.id)));
   citySel.select('.pulse').style('display',d=>rowOf(d.id).place<=3?null:'none');
   const lead = data()[0];
-  document.getElementById('period').textContent = mode==='cum' ? `Итоги с начала года · ${SUM.cum_period}` : `Итоги месяца · ${SUM.month_label}`;
-  document.getElementById('leadname').textContent = lead.region;
-  countTo(lead.total);
   renderTable();
   pinned = idOf(lead.region); hovered = null; const lk = locked; locked = null; renderCard(); focusOn(null); if (lk) pin(lk);
-}
-let raf;
-function countTo(v) {
-  const el = document.getElementById('lead'); cancelAnimationFrame(raf);
-  if (reduced) { el.textContent = pts(v); return; }
-  const t0 = performance.now(), D = 900;
-  (function tick(t){ const k=Math.min(1,(t-t0)/D), e=1-Math.pow(1-k,3); el.textContent = fmt(Math.round(v*e)); if(k<1) raf=requestAnimationFrame(tick); else el.textContent = pts(v); })(t0);
-  setTimeout(() => { el.textContent = pts(v); }, D + 150);
 }
 function renderCard() {
   const id = hovered || locked || pinned, r = rowOf(id), c = document.getElementById('card');
@@ -1154,9 +1135,28 @@ function focusOn(id) {
   fn.textContent = r.place; fn.setAttribute('x', cx+(px-cx)*k); fn.setAttribute('y', cy+(py-cy)*k-6);
   hero.classList.add('focus');
 }
-function hover(id){ hovered=id; clearTimeout(timer); renderCard(); timer=setTimeout(()=>focusOn(hovered||locked), id?220:260); }
-function pin(id){ pinned=id; locked=id; hovered=null; clearTimeout(timer); renderCard(); focusOn(id); }
-function release(){ locked=null; hovered=null; clearTimeout(timer); renderCard(); focusOn(null); }
+// Карточка идёт за курсором, у края карты перескакивает на другую сторону
+const card = document.getElementById('card'), stage = document.getElementById('stage');
+const GAP = 24;
+let mouse = null, moveQueued = false;
+function follow() {
+  moveQueued = false;
+  if (!mouse || !hovered || locked || innerWidth <= 1000) return;
+  const sw = stage.clientWidth, sh = stage.clientHeight, cw = card.offsetWidth, ch = card.offsetHeight;
+  const x = mouse.x + GAP + cw > sw ? mouse.x - GAP - cw : mouse.x + GAP;
+  const y = Math.max(0, Math.min(sh - ch, mouse.y - ch / 2));
+  card.classList.add('follow');
+  card.style.transform = `translate(${x - (sw - cw)}px, ${y - 8}px)`;
+}
+function unfollow() { card.classList.remove('follow'); card.style.transform = ''; }
+function hover(id){
+  if (locked) return;
+  hovered = id; clearTimeout(timer);
+  if (id) { renderCard(); follow(); }
+  timer = setTimeout(() => { if (!hovered) { renderCard(); unfollow(); } focusOn(hovered); }, id ? 220 : 260);
+}
+function pin(id){ card.classList.remove('follow'); pinned=id; locked=id; hovered=null; clearTimeout(timer); renderCard(); focusOn(id); }
+function release(){ locked=null; hovered=null; clearTimeout(timer); renderCard(); focusOn(null); unfollow(); }
 const bind = sel => sel.on('pointerenter',(e,d)=>{ if(e.pointerType==='mouse') hover(d.id); })
   .on('pointerleave',()=>hover(null)).on('click',(e,d)=>pin(d.id))
   .on('focus',(e,d)=>hover(d.id)).on('blur',()=>hover(null))
@@ -1199,7 +1199,12 @@ function fly(from, ms) {
     proj.rotate([from[0]+(REST[0]-from[0])*e, from[1]+(REST[1]-from[1])*e]); draw(); if(k<1) requestAnimationFrame(tick); })(t0);
   setTimeout(() => { if(!dr){ proj.rotate(REST); draw(); } }, ms + 150);
 }
-const st = document.getElementById('stage'); let dr = null;
+const st = stage; let dr = null;
+st.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const b = st.getBoundingClientRect(); mouse = {x: e.clientX - b.left, y: e.clientY - b.top};
+  if (!moveQueued) { moveQueued = true; requestAnimationFrame(follow); }
+});
 st.addEventListener('pointerdown', e => { if(e.pointerType!=='mouse' || e.target.closest('.vw,.card')) return; dr={x:e.clientX,y:e.clientY,r:proj.rotate(),moved:0}; });
 addEventListener('pointermove', e => { if(!dr) return; const dx=e.clientX-dr.x, dy=e.clientY-dr.y; dr.moved=Math.abs(dx)+Math.abs(dy); if(dr.moved<4) return; st.classList.add('drag'); if(document.getElementById('hero').classList.contains('focus')) release();
   const cl=(v,a)=>Math.max(-a,Math.min(a,v)); proj.rotate([dr.r[0]+cl(dx*.09,16), dr.r[1]-cl(dy*.09,12)]); draw(); });
