@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Рейтинг имиджевой работы ДЭР — АФМ РК</title>
-<meta name="description" content="Рейтинг региональных департаментов АФМ РК: январь–ноябрь 2026. Обновлено 2026-11-03 18:34.">
+<meta name="description" content="Рейтинг региональных департаментов АФМ РК: январь–ноябрь 2026. Обновлено 2026-11-03 19:26.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&display=swap">
 <script src="map.js"></script>
 <style>
@@ -597,13 +597,15 @@ a.tp-title:hover { text-decoration: underline; text-decoration-color: #efc512; t
   </section>
 
   <section class="rr-panel" id="top" role="tabpanel" hidden>
-    <p class="rr-note tp-lede">Номинации с начала года. Январь–сентябрь — по ручной таблице со ссылками, с октября — по собранным данным.
-      Репост — публикация ведущего СМИ, повторившая релиз @afm_rk; просмотры — Instagram и Telegram вместе.</p>
+    <p class="rr-note tp-lede" id="tp-lede">Номинации с начала года. Репосты — публикации ведущих СМИ, повторившие релиз @afm_rk
+      (январь–сентябрь — по ручной таблице, с октября — по собранным данным). Просмотры и комментарии — Instagram @afm_rk.</p>
     <div class="rr-grid">
       <div class="rr-card"><h2>Лучшие новости по репостам</h2><p class="rr-note">Какие релизы чаще всего подхватили ведущие СМИ</p><ol class="tp-list" id="tp-news-reposts"></ol></div>
-      <div class="rr-card"><h2>Лучшие новости по просмотрам</h2><p class="rr-note">Самые просматриваемые релизы</p><ol class="tp-list" id="tp-news-views"></ol></div>
       <div class="rr-card"><h2>Регионы по репостам</h2><p class="rr-note">Сколько раз СМИ повторили релизы департамента</p><ol class="tp-list" id="tp-reg-reposts"></ol></div>
-      <div class="rr-card"><h2>Регионы по просмотрам</h2><p class="rr-note">Все просмотры материалов департамента</p><ol class="tp-list" id="tp-reg-views"></ol></div>
+      <div class="rr-card"><h2>Лучшие посты по просмотрам</h2><p class="rr-note">Самые просматриваемые ролики региональных департаментов в Instagram</p><ol class="tp-list" id="tp-news-views"></ol></div>
+      <div class="rr-card"><h2>Регионы по просмотрам</h2><p class="rr-note">Просмотры роликов департамента в Instagram</p><ol class="tp-list" id="tp-reg-views"></ol></div>
+      <div class="rr-card"><h2>Лучшие посты по комментариям</h2><p class="rr-note">Где подписчики обсуждали больше всего</p><ol class="tp-list" id="tp-news-comments"></ol></div>
+      <div class="rr-card"><h2>Регионы по комментариям</h2><p class="rr-note">Комментарии под постами департамента в Instagram</p><ol class="tp-list" id="tp-reg-comments"></ol></div>
     </div>
   </section>
 
@@ -1059,7 +1061,7 @@ a.tp-title:hover { text-decoration: underline; text-decoration-color: #efc512; t
     });
   });
 </script>
-<p class="rr-foot-site">Рейтинг имиджевой работы департаментов экономических расследований АФМ РК · данные по 2026-11-03 · обновлено 2026-11-03 18:34</p>
+<p class="rr-foot-site">Рейтинг имиджевой работы департаментов экономических расследований АФМ РК · данные по 2026-11-03 · обновлено 2026-11-03 19:26</p>
 </div>
 <script>(function () {
 const GEO = window.KZ_GEO, MONTH = window.RATING_DATA.month, CUM = window.RATING_DATA.cumulative, SUM = window.RATING_DATA.summary[0];
@@ -1270,10 +1272,22 @@ window.__home = {pin, release, setView, setMode, draw, proj, REST, hover};
   };
   const fill = (id, rows, make) => document.getElementById(id).replaceChildren(...rows.map(make));
 
+  const day = (d) => (d ? d.split('-').reverse().slice(0, 2).join('.') : '');
+  const postsN = (n) => `${n} ${word(n, 'пост', 'поста', 'постов')}`;
+  const comments = (n) => `${int(n)} ${word(n, 'комментарий', 'комментария', 'комментариев')}`;
   fill('tp-news-reposts', TOP.news_reposts, (r, i) => item(i, r.title, `${r.region} · ${period(r.period)} · ${views(r.views)} просмотров`, reposts(r.reposts), r.url));
-  fill('tp-news-views', TOP.news_views, (r, i) => item(i, r.title, `${r.region} · ${period(r.period)} · ${reposts(r.reposts)}`, views(r.views), r.url));
   fill('tp-reg-reposts', TOP.regions_reposts, (r, i) => item(i, r.region, `${views(r.views)} просмотров`, reposts(r.reposts)));
-  fill('tp-reg-views', TOP.regions_views, (r, i) => item(i, r.region, reposts(r.reposts), views(r.views)));
+  if (TOP.ig_views) {
+    fill('tp-news-views', TOP.ig_views, (r, i) => item(i, r.title, `${r.region} · ${day(r.date)} · ${comments(r.comments)}`, views(r.views), r.url));
+    fill('tp-reg-views', TOP.regions_ig_views, (r, i) => item(i, r.region, `${postsN(r.posts)} · ${comments(r.comments)}`, views(r.views)));
+    fill('tp-news-comments', TOP.ig_comments, (r, i) => item(i, r.title, `${r.region} · ${day(r.date)}${r.views ? ' · ' + views(r.views) + ' просмотров' : ''}`, comments(r.comments), r.url));
+    fill('tp-reg-comments', TOP.regions_ig_comments, (r, i) => item(i, r.region, `${postsN(r.posts)} · ${views(r.views)} просмотров`, comments(r.comments)));
+  } else {
+    fill('tp-news-views', TOP.news_views, (r, i) => item(i, r.title, `${r.region} · ${period(r.period)} · ${reposts(r.reposts)}`, views(r.views), r.url));
+    fill('tp-reg-views', TOP.regions_views, (r, i) => item(i, r.region, reposts(r.reposts), views(r.views)));
+    document.getElementById('tp-news-comments').closest('.rr-card').hidden = true;
+    document.getElementById('tp-reg-comments').closest('.rr-card').hidden = true;
+  }
 })();
 </script>
 <script>window.__dashRunAll();</script>
